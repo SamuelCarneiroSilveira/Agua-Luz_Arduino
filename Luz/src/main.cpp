@@ -5,58 +5,100 @@
 #define amarelo_1 10
 #define amarelo_2 11
 
-// Pinos do sensor HC-SR04
+// Pinos do sensor HC-SR04 (Ultrassônico)
 #define trigPin 7
 #define echoPin 6
 
-// Variáveis para o sensor
+// Pinos do sensor LDR
+#define ldrPin A0
+#define ldrLimite 500 // Ajuste este valor. Quanto menor, mais sensível ao escuro.
+
+// Pino para selecionar o modo (com um botão ou chave)
+#define modoPin 4
+
+// Variáveis para o sensor ultrassônico
 long duracao;
 int distancia;
+bool estadoAnteriorUltrassonico = false;
 
 // Variável para controlar o estado do fogo (ligado ou desligado)
 bool fogoLigado = false;
 
-// Variável para controle do "botão" virtual do sensor
-bool estadoAnterior = false;
+// Variável para escolher qual sensor usar.
+// true = Ultrassônico, false = LDR
+bool modoUltrassonico = true;
 
 void setup() {
-  // Configuração dos pinos dos LEDs como saída
+  // Configuração dos pinos dos LEDs
   pinMode(vermelho, OUTPUT);
   pinMode(amarelo_1, OUTPUT);
   pinMode(amarelo_2, OUTPUT);
-
-  // Configuração dos pinos do sensor como entrada e saída
+  
+  // Configuração dos pinos do sensor ultrassônico
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  
+  // Configuração do pino do seletor de modo
+  pinMode(modoPin, INPUT);
 
-  // Inicia a comunicação serial para monitorar a distância
+  // Inicia a comunicação serial para debug
   Serial.begin(9600);
 }
 
 void loop() {
-  // Lógica para medir a distância
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  // Lê o estado do pino do seletor. Se o pino estiver em HIGH, usa o ultrassônico.
+  // Se estiver em LOW, usa o LDR.
+  modoUltrassonico = digitalRead(modoPin);
 
-  duracao = pulseIn(echoPin, HIGH);
-  distancia = duracao * 0.034 / 2;
+  if (modoUltrassonico) {
+    // Modo Ultrassônico
+    
+    // Lógica para medir a distância
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+  
+    duracao = pulseIn(echoPin, HIGH);
+    distancia = duracao * 0.034 / 2;
+  
+    // Lógica do interruptor virtual
+    // Verifica se a distância é menor que 10 cm (ou outro valor que você preferir)
+    bool proximo = (distancia < 10);
+  
+    // Detecta a borda de subida (quando a mão fica próxima)
+    if (proximo && !estadoAnteriorUltrassonico) {
+      // Altera o estado do fogo (liga se estiver desligado, e vice-versa)
+      fogoLigado = !fogoLigado;
+      delay(500); // Pequeno atraso para evitar múltiplas mudanças rápidas
+    }
+    
+    estadoAnteriorUltrassonico = proximo;
 
-  // Lógica do interruptor virtual
-  // Verifica se a distância é menor que 10 cm
-  bool proximo = (distancia < 10);
+    // Imprime a distância no monitor serial para debug
+    Serial.print("Modo: Ultrassônico | Distância: ");
+    Serial.print(distancia);
+    Serial.println(" cm");
 
-  // Detecta a borda de subida (quando a mão fica próxima)
-  if (proximo && !estadoAnterior) {
-    // Altera o estado do fogo (liga se estiver desligado, e vice-versa)
-    fogoLigado = !fogoLigado;
-    delay(500); // Pequeno atraso para evitar múltiplas mudanças rápidas
+  } else {
+    // Modo LDR
+    
+    // Lê o valor do sensor de luminosidade
+    int valorLDR = analogRead(ldrPin);
+    
+    // A luz acende se o valor for menor que o limite (está escuro)
+    if (valorLDR < ldrLimite) {
+      fogoLigado = true;
+    } else {
+      fogoLigado = false;
+    }
+
+    // Imprime o valor do LDR no monitor serial para debug
+    Serial.print("Modo: LDR | Luminosidade: ");
+    Serial.println(valorLDR);
+    
   }
-
-  // Atualiza o estado anterior para a próxima iteração
-  estadoAnterior = proximo;
 
   // Lógica de simulação de fogo
   if (fogoLigado) {
@@ -71,10 +113,4 @@ void loop() {
     analogWrite(amarelo_1, 0);
     analogWrite(amarelo_2, 0);
   }
-
-  // Opcional: imprimir a distância no monitor serial para debug
-  Serial.print("Distância: ");
-  Serial.print(distancia);
-  Serial.println(" cm");
-  delay(100);
 }
