@@ -1,5 +1,3 @@
-Com certeza! Aqui está o conteúdo do README.md completo, com a formatação Markdown já aplicada. Basta copiar e colar em seu arquivo `.md`.
-
 # Água-Luz_Arduino
 
 Este projeto é uma jornada em duas partes para transformar o seu Arduino em um super-herói do dia a dia. A primeira missão é salvar a sua planta de ficar com sede. A segunda é fazer a luz aparecer magicamente de duas formas diferentes!
