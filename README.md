@@ -6,7 +6,7 @@ Este projeto é uma jornada em duas partes para transformar o seu Arduino em um 
 
 ## 1. Água: O Super-Herói da Irrigação
 
-Este projeto é como um salva-vidas para a sua planta! Usando um Arduino, você vai construir um sistema inteligente que sente quando o solo está seco e liga uma bomba para dar um gole de água para a sua plantinha.
+Este projeto é como um salva-vidas para a sua planta! Usando um Arduino, você vai construir um sistema inteligente que sente quando o solo  nestá seco e liga uma bomba para dar um gole de água para a sua plantinha.
 
 ### O Que Você Vai Precisar (Água)
 
@@ -52,6 +52,8 @@ Ele é a chave da energia da bomba. O Arduino vai dar o sinal para ele deixar a 
 -   O pino **COMUM** do relé se conecta ao **polo positivo (+)** da fonte de alimentação separada de 5V.
 
 > **Atenção:** Lembre-se, a fonte da bomba é separada. Nunca conecte a bomba direto no Arduino!
+
+> ** Dica ** Teste o sistema com a bomba fora da agua primeiro!
 
 ---
 
