@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 //---
-// Definições (apelidos para os pinos)
+// Definições (como se fossem apelidos para os pinos)
 //---
 #define LED_VERMELHO 9
 #define LED_AMARELO_1 10
