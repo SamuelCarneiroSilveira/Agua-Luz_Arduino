@@ -1,116 +1,113 @@
 #include <Arduino.h>
 
-// Pinos dos LEDs
-#define vermelho 9
-#define amarelo_1 10
-#define amarelo_2 11
+//---
+// Definições (apelidos para os pinos)
+//---
+#define LED_VERMELHO 9
+#define LED_AMARELO_1 10
+#define LED_AMARELO_2 11
 
-// Pinos do sensor HC-SR04 (Ultrassônico)
-#define trigPin 7
-#define echoPin 6
+#define PINO_TRIGGER 7 // Pino que "dispara" o som
+#define PINO_ECHO 6    // Pino que "escuta" o som
 
-// Pinos do sensor LDR
-#define ldrPin A0
-#define ldrLimite 500 // Ajuste este valor. Quanto menor, mais sensível ao escuro.
+#define PINO_LDR A0
+#define LIMIAR_LUZ 300 // Nível de escuridão para ligar o fogo automático
 
-// Pino para selecionar o modo (com um botão ou chave)
-#define modoPin 4
+//---
+// Variáveis Globais (dados que todos podem usar)
+//---
+bool fogoEstaLigado = false;
+bool maoEstaPerto = false;
+bool maoEstavaPertoAntes = false;
 
-// Variáveis para o sensor ultrassônico
-long duracao;
-int distancia;
-bool estadoAnteriorUltrassonico = false;
+//---
+// Funções (pequenas tarefas que o Arduino pode fazer)
+//---
 
-// Variável para controlar o estado do fogo (ligado ou desligado)
-bool fogoLigado = false;
+// Função para acender e apagar o fogo
+void controlarFogo(bool ligar) {
+  if (ligar) {
+    // Simulação de fogo: LEDs pulsam de forma aleatória
+    analogWrite(LED_VERMELHO, random(120) + 136);
+    analogWrite(LED_AMARELO_1, random(120) + 136);
+    analogWrite(LED_AMARELO_2, random(120) + 136);
+    delay(random(100));
+  } else {
+    // Apaga todos os LEDs
+    analogWrite(LED_VERMELHO, 0);
+    analogWrite(LED_AMARELO_1, 0);
+    analogWrite(LED_AMARELO_2, 0);
+  }
+}
 
-// Variável para escolher qual sensor usar.
-// true = Ultrassônico, false = LDR
-bool modoUltrassonico = true;
+// Função para verificar se está escuro
+bool estaEscuro() {
+  int nivelDeLuz = analogRead(PINO_LDR);
+  Serial.print("Nível de Luz: ");
+  Serial.println(nivelDeLuz);
+  return nivelDeLuz < LIMIAR_LUZ;
+}
 
+// Função para medir a distância de um objeto
+int medirDistancia() {
+  // Dispara o som
+  digitalWrite(PINO_TRIGGER, LOW);
+  delayMicroseconds(2);
+  digitalWrite(PINO_TRIGGER, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(PINO_TRIGGER, LOW);
+  
+  // Calcula a distância baseada no tempo que o som leva para voltar
+  long duracao = pulseIn(PINO_ECHO, HIGH);
+  int distanciaCM = duracao * 0.034 / 2;
+  
+  Serial.print("Distância: ");
+  Serial.print(distanciaCM);
+  Serial.println(" cm");
+  
+  return distanciaCM;
+}
+
+//---
+// setup() - Onde o programa começa (só roda uma vez)
+//---
 void setup() {
-  // Configuração dos pinos dos LEDs
-  pinMode(vermelho, OUTPUT);
-  pinMode(amarelo_1, OUTPUT);
-  pinMode(amarelo_2, OUTPUT);
+  // Diz ao Arduino quais pinos são para saída de energia
+  pinMode(LED_VERMELHO, OUTPUT);
+  pinMode(LED_AMARELO_1, OUTPUT);
+  pinMode(LED_AMARELO_2, OUTPUT);
   
-  // Configuração dos pinos do sensor ultrassônico
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  
-  // Configuração do pino do seletor de modo
-  pinMode(modoPin, INPUT);
+  // Diz ao Arduino quais pinos são para o sensor ultrassônico
+  pinMode(PINO_TRIGGER, OUTPUT);
+  pinMode(PINO_ECHO, INPUT);
 
-  // Inicia a comunicação serial para debug
+  // Inicia a comunicação para ver as mensagens no computador
   Serial.begin(9600);
 }
 
+//---
+// loop() - Onde o programa se repete para sempre
+//---
 void loop() {
-  // Lê o estado do pino do seletor. Se o pino estiver em HIGH, usa o ultrassônico.
-  // Se estiver em LOW, usa o LDR.
-  modoUltrassonico = digitalRead(modoPin);
-
-  if (modoUltrassonico) {
-    // Modo Ultrassônico
-    
-    // Lógica para medir a distância
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-  
-    duracao = pulseIn(echoPin, HIGH);
-    distancia = duracao * 0.034 / 2;
-  
-    // Lógica do interruptor virtual
-    // Verifica se a distância é menor que 10 cm (ou outro valor que você preferir)
-    bool proximo = (distancia < 10);
-  
-    // Detecta a borda de subida (quando a mão fica próxima)
-    if (proximo && !estadoAnteriorUltrassonico) {
-      // Altera o estado do fogo (liga se estiver desligado, e vice-versa)
-      fogoLigado = !fogoLigado;
-      delay(500); // Pequeno atraso para evitar múltiplas mudanças rápidas
-    }
-    
-    estadoAnteriorUltrassonico = proximo;
-
-    // Imprime a distância no monitor serial para debug
-    Serial.print("Modo: Ultrassônico | Distância: ");
-    Serial.print(distancia);
-    Serial.println(" cm");
-
+  // Verifica se está escuro
+  if (estaEscuro()) {
+    // Se estiver escuro, o fogo fica ligado no modo "automático"
+    fogoEstaLigado = true;
+    Serial.println("Modo Automático: Escuro detectado!");
   } else {
-    // Modo LDR
-    
-    // Lê o valor do sensor de luminosidade
-    int valorLDR = analogRead(ldrPin);
-    
-    // A luz acende se o valor for menor que o limite (está escuro)
-    if (valorLDR < ldrLimite) {
-      fogoLigado = true;
-    } else {
-      fogoLigado = false;
+    // Se estiver claro, usa o sensor de distância
+    int distancia = medirDistancia();
+    maoEstaPerto = (distancia < 10);
+  
+    // Detecta se a mão se aproximou (bordas de subida)
+    if (maoEstaPerto && !maoEstavaPertoAntes) {
+      // Se a mão se aproximou, muda o estado do fogo
+      fogoEstaLigado = !fogoEstaLigado;
+      delay(500); // Espera um pouco para não "piscar" o fogo sem querer
     }
-
-    // Imprime o valor do LDR no monitor serial para debug
-    Serial.print("Modo: LDR | Luminosidade: ");
-    Serial.println(valorLDR);
-    
+    maoEstavaPertoAntes = maoEstaPerto;
   }
-
-  // Lógica de simulação de fogo
-  if (fogoLigado) {
-    // Se o fogo estiver ligado, os LEDs pulsam
-    analogWrite(vermelho, random(120) + 136);
-    analogWrite(amarelo_1, random(120) + 136);
-    analogWrite(amarelo_2, random(120) + 136);
-    delay(random(100));
-  } else {
-    // Se o fogo estiver desligado, os LEDs ficam apagados
-    analogWrite(vermelho, 0);
-    analogWrite(amarelo_1, 0);
-    analogWrite(amarelo_2, 0);
-  }
+  
+  // Finalmente, acende ou apaga o fogo de acordo com o estado atual
+  controlarFogo(fogoEstaLigado);
 }
