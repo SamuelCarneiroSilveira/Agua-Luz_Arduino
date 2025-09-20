@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+
+
+
 //---
 // Definições (como se fossem apelidos para os pinos)
 //---
@@ -11,7 +14,8 @@
 #define PINO_ECHO 6    // Pino que "escuta" o som
 
 #define PINO_LDR A0
-#define LIMIAR_LUZ 300 // Nível de escuridão para ligar o fogo automático
+#define LIMIAR_LUZ 450 // Nível de escuridão para ligar o fogo automático
+
 
 //---
 // Variáveis Globais (dados que todos podem usar)
@@ -103,7 +107,7 @@ void loop() {
     if (maoEstaPerto && !maoEstavaPertoAntes) {
       // Se a mão se aproximou, muda o estado do fogo
       fogoEstaLigado = !fogoEstaLigado;
-      delay(500); // Espera um pouco para não "piscar" o fogo sem querer
+      delay(1000); // Espera um pouco para não "piscar" o fogo sem querer
     }
     maoEstavaPertoAntes = maoEstaPerto;
   }

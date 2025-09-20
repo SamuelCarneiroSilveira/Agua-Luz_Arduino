@@ -37,7 +37,7 @@ Este sensor é o primeiro a entrar em ação. Ele informa ao Arduino se a terra 
 
 #### Módulo Relé
 
-Ele é o "guardião" da energia da bomba. O Arduino vai dar o sinal para ele deixar a energia passar ou não.
+Ele é a chave da energia da bomba. O Arduino vai dar o sinal para ele deixar a energia passar ou não.
 
 -   **Pino VCC** do relé vai para o **pino 5V** do Arduino.
 -   **Pino GND** do relé vai para o **pino GND** do Arduino.
@@ -66,12 +66,9 @@ Agora vamos para a segunda missão. Imagine ter uma luz que se acende sozinha qu
 * **3x Resistores de 220 Ohm:** Para proteger seus LEDs.
 * **1x Sensor Ultrassônico HC-SR04:** O "radar" que mede a distância.
 * **1x Sensor de Luminosidade LDR:** O "olho mágico" que sente a escuridão.
-* **2x Resistores de 10k Ohm:** Um para o LDR e outro para o botão.
-* **1x Botão ou chave:** Para você escolher se quer ligar o fogo com o ultrassônico ou com o LDR.
-* **1x Luminária com LEDs:** O nosso projeto final.
+* **2x Resistores de 10k Ohm:** Para a ligação do sensor de luz
 * **1x Folha de sulfite:** Para simular uma luminária.
 * **Jumpers:** Para conectar tudo.
-* **Fita isolante ou silicone:** Segurança em primeiro lugar!
 
 ---
 
@@ -99,15 +96,6 @@ Ele será um dos nossos "interruptores".
 Ele é o nosso "interruptor automático".
 
 -   Conecte um lado do **LDR** ao **pino 5V** do Arduino.
--   Conecte o outro lado do **LDR** ao **pino A0** (Analógico 0) do Arduino.
--   Conecte o **Resistor de 10k Ohm** entre o pino **A0** e o **GND** do Arduino.
-
-#### O Seletor de Modo
-
-Este botão vai te dar o poder de escolher qual sensor usar!
-
--   Um pino do botão vai para o **pino 5V** do Arduino.
--   O outro pino vai para o **pino D4** (Digital 4) do Arduino.
--   Conecte o **Resistor de 10k Ohm** entre o pino **D4** e o **GND**.
-
-Agora, com o código, você pode alternar entre o modo "ultrassônico" (se o botão estiver apertado) e o modo "LDR" (se o botão estiver solto).
+-   Conecte o outro lado do **LDR** ao **Resistor de 10k Ohm**
+-   Conecte o **Resistor de 10k Ohm** ao **GND** do Arduino.
+-   Usando um jumper, conecte o "meio" da ligação entre o LDR e o resistor ao**pino A0** (Analógico 0) do Arduino.
