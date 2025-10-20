@@ -16,10 +16,10 @@ void setup()
   // Garante que o relé comece desligado
   digitalWrite(rele, HIGH);
 
-  delay(10000); // Aguarda 5 segundos para estabilizar o sensor
+  delay(2000); // Aguarda 7 segundos para estabilizar o sensor
 }
 
-void loop() 
+void loop()
 {
   
   // Lê o estado do sensor de umidade
@@ -30,13 +30,13 @@ void loop()
   {
     // Caso irrigar seja verdadeiro, liga a bomba
     digitalWrite(rele, LOW);
+    delay(100);
   }
   else
   {
     // Caso contrário, desliga a bomba
     digitalWrite(rele, HIGH);
-  }
-  
+    delay(10000);
+  }  
   // Pequeno atraso para estabilizar a leitura
-  delay(250);
 }
